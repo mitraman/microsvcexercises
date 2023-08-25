@@ -1,0 +1,144 @@
+openapi: 3.0.3
+info:
+  title: Shoe Ordering Microservice
+  description: |-
+    The API specification for the shoe ordering service.
+  version: 1.0.11
+paths:
+  /orders:
+    post:
+      summary: Create a purchase order for shoes
+      description: Creates and validates a shoe order. A succesful response inidicates that the ordering system will attempt to find the best fulfilment path.
+      operationId: createorder
+      requestBody:
+        description: Submit a purchase order
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrder'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '405':
+          description: Invalid input
+      security:
+        - petstore_auth:
+            - write:pets
+            - read:pets
+  /orders/{orderId}:
+    get:
+      summary: Retrieve the details of a purchase order
+      operationId: getOrderDetails
+      parameters:
+        - name: orderId
+          in: path
+          description: Identifier for the purchase order
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PurchaseOrderDetails'          
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PurchaseOrderDetails'
+        '400':
+          description: Invalid status value
+      security:
+        - petstore_auth:
+            - write:pets
+            - read:pets
+components:
+  schemas:
+    PurchaseOrder:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        items:
+          type:  array
+          items:
+            type: object
+            properties:
+              productId: 
+                type: string
+              quantity:
+                type: integer
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+        shipDate:
+          type: string
+          format: date-time
+    PurchaseOrderDetails:
+      id:
+          type: integer
+          format: int64
+          example: 10
+      items:
+        type:  array
+        items:
+          type: object
+          properties:
+            productId: 
+              type: string
+            quantity:
+              type: integer
+      shipDate:
+          type: string
+          format: date-time
+          status:
+            type: string
+            description: Order Status
+            example: approved
+            enum:
+              - placed
+              - approved
+              - delivered
+          complete:
+            type: boolean
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+          example: 437 Lytton
+        city:
+          type: string
+          example: Palo Alto
+        locality:
+          type: string
+          example: CA
+        postalCode:
+          type: string
+          example: '94301'
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
